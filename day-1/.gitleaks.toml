@@ -1,0 +1,20 @@
+title = "Custom Gitleaks Rules"
+
+[[rules]]
+id = "DB_PASSWORD"
+description = "Hardcoded DB password"
+regex = '''SuperSecretPassword123'''
+tags = ["password", "hardcoded"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''(?i)wJalrXUtnFEMI/K7MDENG/[A-Za-z0-9+/]{16,40}'''
+tags = ["aws", "key", "secret"]
+
+[[rules]]
+id = "google-api-key"
+description = "Google API Key"
+regex = '''AIza[0-9A-Za-z\-_]{35,}'''
+tags = ["google", "api", "key"]
+

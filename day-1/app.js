@@ -2,10 +2,14 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ❌ Hardcoded fake secrets (intentionally for practice)
+// AWS Access Key (valid pattern)
 const DB_PASSWORD = "SuperSecretPassword123";
-const API_KEY = "AIzaFakeAPIKey-123456789";
-const AWS_SECRET = "aws_secret_key_example_ABC123456";
+
+// AWS Secret Key (valid pattern - 40 chars)
+const API_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+
+// Google API Key (valid pattern - 39 chars after AIza)
+const AWS_SECRET = "AIzaSyA-1234567890abcdefghijklmnopqrstuvwx";
 
 // Basic endpoint
 app.get("/", (req, res) => {
