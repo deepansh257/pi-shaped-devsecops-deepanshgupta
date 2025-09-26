@@ -30,6 +30,11 @@ jobs:
             sleep 5
           done
 
+      - name: Create ZAP workspace
+        run: |
+          mkdir -p zap-workspace
+          chmod 777 zap-workspace
+
       - name: Run OWASP ZAP Baseline Scan
         run: |
           docker run --network host \
