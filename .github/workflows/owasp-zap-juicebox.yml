@@ -10,24 +10,17 @@ jobs:
   zap-scan:
     runs-on: ubuntu-latest
 
-    services:
-      juice-shop:
-        image: bkimminich/juice-shop
-        ports:
-          - 3000:3000
-        options: >-
-          --health-cmd="curl -f http://localhost:3000 || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Start Juice Shop
+        run: |
+          docker run -d --name juice-shop -p 3000:3000 bkimminich/juice-shop
+
       - name: Wait for Juice Shop to be ready
         run: |
-          echo "Waiting for Juice Shop to be ready..."
+          echo "Waiting for Juice Shop..."
           for i in {1..30}; do
             if curl -s http://localhost:3000 > /dev/null; then
               echo "Juice Shop is up!"
