@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r /app/day-3/requirements.txt
+          pip install -r /app/day-3/sample_flask_security_project/requirements.txt
           pip install bandit
       - name: Run Bandit
         run: bandit -r . -f html -o bandit-report.html || true
@@ -66,19 +66,6 @@ jobs:
   zap:
     name: OWASP ZAP DAST
     runs-on: ubuntu-latest
-    services:
-      flask-app:
-        image: python:3.10
-        ports:
-          - 5000:5000
-        options: >-
-          --health-cmd "curl --fail http://localhost:5000 || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        volumes:
-          - ./:/app
-        command: bash -c "pip install -r /app/requirements.txt && python /app/app.py"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -87,7 +74,7 @@ jobs:
           python-version: '3.10'
       - name: Install dependencies
         run: |
-          pip install -r /app/day-3/requirements.txt
+          pip install -r /app/day-3/sample_flask_security_project/requirements.txt
       - name: Start Flask app in background
         run: |
           python app.py &  # starts Flask in background
@@ -102,4 +89,3 @@ jobs:
         with:
           name: zap-report
           path: zap-report.html
-
