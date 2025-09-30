@@ -1,0 +1,6 @@
+# Simple gitleaks config to detect AWS-like keys and generic high-entropy strings
+title = "Gitleaks config"
+[[rules]]
+description = "AWS Access Key"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "aws"]

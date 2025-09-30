@@ -1,0 +1,66 @@
+image: python:3.10
+
+stages:
+  - bandit
+  - semgrep
+  - gitleaks
+  - zap
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+before_script:
+  - pip install --upgrade pip
+  - pip install bandit semgrep gitleaks
+
+bandit:
+  stage: bandit
+  script:
+    - pip install -r requirements.txt || true
+    - bandit -r . -f html -o bandit-report.html || true
+  artifacts:
+    paths:
+      - bandit-report.html
+    when: always
+    expire_in: 1 week
+
+semgrep:
+  stage: semgrep
+  script:
+    - semgrep --config semgrep.yml --quiet || true
+  artifacts:
+    paths:
+      - semgrep-report.txt
+    when: always
+    expire_in: 1 week
+  after_script:
+    - semgrep --config semgrep.yml --json > semgrep-report.json || true
+    - cat semgrep-report.json > semgrep-report.txt || true
+
+gitleaks:
+  stage: gitleaks
+  image: zricethezav/gitleaks:latest
+  script:
+    - gitleaks detect --source . --report=gitleaks-report.json || true
+  artifacts:
+    paths:
+      - gitleaks-report.json
+    when: always
+    expire_in: 1 week
+
+zap:
+  stage: zap
+  image: owasp/zap2docker-stable
+  services: []
+  before_script:
+    - pip install -r requirements.txt || true
+  script:
+    # Start the Flask app in the background
+    - python app.py & sleep 2
+    # Run ZAP baseline scan against the running app and generate an HTML report
+    - /zap/zap-baseline.py -t http://127.0.0.1:5000 -r zap-report.html || true
+  artifacts:
+    paths:
+      - zap-report.html
+    when: always
+    expire_in: 1 week

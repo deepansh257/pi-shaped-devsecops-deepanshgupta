@@ -1,0 +1,3 @@
+Flask==1.1.2
+gunicorn==20.0.4
+# Note: older Flask version intentionally used to simulate vulnerable dependency for the exercise

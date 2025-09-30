@@ -1,0 +1,95 @@
+name: Security Scans
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  bandit:
+    name: Bandit Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit
+      - name: Run Bandit
+        run: bandit -r . -f html -o bandit-report.html || true
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.html
+
+  semgrep:
+    name: Semgrep Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Semgrep
+        run: |
+          python -m pip install --upgrade pip
+          pip install semgrep
+      - name: Run Semgrep
+        run: |
+          semgrep --config semgrep.yml --json > semgrep-report.json || true
+      - name: Upload Semgrep report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+
+  gitleaks:
+    name: Gitleaks Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml
+          output: gitleaks-report.json
+      - name: Upload Gitleaks report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+
+  zap:
+    name: OWASP ZAP DAST
+    runs-on: ubuntu-latest
+    services:
+      flask-app:
+        image: python:3.10
+        ports:
+          - 5000:5000
+        options: >-
+          --health-cmd "curl --fail http://localhost:5000 || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        volumes:
+          - ./:/app
+        command: bash -c "pip install -r /app/requirements.txt && python /app/app.py"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for Flask app
+        run: sleep 10
+      - name: Run ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.8.0
+        with:
+          target: http://localhost:5000
+          report: zap-report.html
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap-report.html
