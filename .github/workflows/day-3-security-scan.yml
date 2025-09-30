@@ -66,23 +66,19 @@ jobs:
   zap:
     name: OWASP ZAP DAST
     runs-on: ubuntu-latest
-    services:
-      flask-app:
-        image: python:3.10
-        ports:
-          - 5000:5000
-        options: >-
-          --health-cmd "curl --fail http://localhost:5000 || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        volumes:
-          - ./:/app
-        command: bash -c "pip install -r /app/requirements.txt && python /app/app.py"
     steps:
       - uses: actions/checkout@v4
-      - name: Wait for Flask app
-        run: sleep 10
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Start Flask app in background
+        run: |
+          python app.py &  # starts Flask in background
+          sleep 5          # wait a few seconds for it to start
       - name: Run ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.8.0
         with:
@@ -93,3 +89,4 @@ jobs:
         with:
           name: zap-report
           path: zap-report.html
+
